@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Team 設計ガイド</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --green: #059669;
+      --green-soft: #ecfdf5;
+      --orange: #d97706;
+      --orange-soft: #fffbeb;
+      --red: #dc2626;
+      --red-soft: #fef2f2;
+      --gray-soft: #f9fafb;
+      --purple-soft: #f5f3ff;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+      line-height: 1.75;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, #111827, #1d4ed8);
+      color: white;
+      padding: 52px 24px;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .86;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4vw, 46px);
+      line-height: 1.25;
+      margin: 0 0 16px;
+    }
+
+    .lead {
+      font-size: 18px;
+      max-width: 900px;
+      margin: 0;
+      opacity: .95;
+    }
+
+    main { padding: 32px 24px 56px; }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      margin: 20px 0;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      font-size: 24px;
+      margin: 0 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h3 {
+      font-size: 19px;
+      margin: 24px 0 8px;
+    }
+
+    p { margin: 0 0 14px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      border-radius: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: var(--gray-soft);
+    }
+
+    .card strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .ok { background: var(--green-soft); border-color: #bbf7d0; }
+    .warn { background: var(--orange-soft); border-color: #fde68a; }
+    .bad { background: var(--red-soft); border-color: #fecaca; }
+    .info { background: var(--blue-soft); border-color: #bfdbfe; }
+    .purple { background: var(--purple-soft); border-color: #ddd6fe; }
+
+    .callout {
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin: 16px 0;
+      border: 1px solid var(--line);
+    }
+
+    .callout.good { background: var(--green-soft); border-color: #bbf7d0; }
+    .callout.caution { background: var(--orange-soft); border-color: #fde68a; }
+    .callout.danger { background: var(--red-soft); border-color: #fecaca; }
+    .callout.note { background: var(--blue-soft); border-color: #bfdbfe; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+
+    th, td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: .92em;
+    }
+
+    pre {
+      background: #111827;
+      color: #e5e7eb;
+      padding: 18px;
+      border-radius: 14px;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    pre code {
+      background: transparent;
+      border: none;
+      color: inherit;
+      padding: 0;
+    }
+
+    ul, ol {
+      padding-left: 1.35rem;
+      margin-top: 8px;
+    }
+
+    li { margin: 6px 0; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .flow-item {
+      background: var(--blue-soft);
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+      font-weight: 700;
+      color: #1e40af;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 5px;
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    .source-list a {
+      color: var(--blue);
+      text-decoration: none;
+      border-bottom: 1px solid #bfdbfe;
+    }
+
+    .source-list a:hover { border-bottom-color: var(--blue); }
+
+    footer {
+      color: var(--muted);
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .grid, .grid.two, .flow {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 20px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="eyebrow">General Design Guide</div>
+      <h1>Agent Team はどう設計すべきか</h1>
+      <p class="lead">
+        特定プロジェクトの設定に依存せず、Claude / ChatGPT / Google系の公式情報や実務上の失敗パターンを踏まえて、
+        マルチAgentチームを設計するときの原則を整理したガイドです。
+      </p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>1. 基本結論</h2>
+      <div class="callout good">
+        <strong>Agent Team は「常に使うもの」ではなく、「分解・並列調査・検証が必要なときに使うもの」です。</strong><br>
+        単純作業は単体Agentで十分です。複雑な調査、複数領域の設計、レビューが必要な実装、セキュリティ・運用影響がある変更ではTeam化が有効です。
+      </div>
+
+      <div class="grid">
+        <div class="card ok">
+          <strong>使うべき場面</strong>
+          リサーチ、設計、複数領域変更、レビュー、検証、移行計画。
+        </div>
+        <div class="card warn">
+          <strong>使いすぎ注意</strong>
+          小さい修正、順序依存が強い作業、scopeが曖昧な作業。
+        </div>
+        <div class="card info">
+          <strong>推奨構成</strong>
+          中央Coordinator + 必要なSpecialist + Worker + Reviewer。
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. 推奨アーキテクチャ</h2>
+      <p>
+        最も扱いやすいのは、中央のCoordinatorが全体を見て、必要なAgentにだけ委譲する
+        <strong>hub-and-spoke型</strong> です。
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>役割</th>
+            <th>責務</th>
+            <th>注意点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Router</td>
+            <td>タスクを分類し、Agent Teamを使うか決める。</td>
+            <td>ここで無駄な起動を止める。</td>
+          </tr>
+          <tr>
+            <td>Coordinator</td>
+            <td>タスク分解、Agentへの委譲、結果の統合、最終判断。</td>
+            <td>自分で全部実装しない。判断と統合に集中する。</td>
+          </tr>
+          <tr>
+            <td>Planner</td>
+            <td>方針、作業順序、未決事項、リスクを整理する。</td>
+            <td>順序依存がある作業では先に起動する。</td>
+          </tr>
+          <tr>
+            <td>Specialist</td>
+            <td>特定領域の調査・観点出し・制約確認。</td>
+            <td>原則read-onlyにすると衝突しにくい。</td>
+          </tr>
+          <tr>
+            <td>Worker / Implementer</td>
+            <td>限定された範囲で実装・修正・ドキュメント作成を行う。</td>
+            <td>編集対象を明確にする。同一ファイルの並列編集は禁止。</td>
+          </tr>
+          <tr>
+            <td>Reviewer</td>
+            <td>欠陥、要件漏れ、過剰変更、一貫性を確認する。</td>
+            <td>実装後だけでなく、必要なら作業前の観点出しにも使う。</td>
+          </tr>
+          <tr>
+            <td>Tester</td>
+            <td>検証手順、テスト観点、回帰リスクを確認する。</td>
+            <td>実行可能な検証コマンドや期待結果まで出す。</td>
+          </tr>
+          <tr>
+            <td>Security / DevOps</td>
+            <td>権限、公開境界、秘密情報、CI/CD、運用影響を確認する。</td>
+            <td>常時起動ではなく、関係する変更時だけでよい。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 標準フロー</h2>
+      <div class="flow">
+        <div class="flow-item">分類</div>
+        <div class="flow-item">計画</div>
+        <div class="flow-item">分担</div>
+        <div class="flow-item">作業</div>
+        <div class="flow-item">レビュー</div>
+        <div class="flow-item">修正</div>
+      </div>
+
+      <ol>
+        <li><strong>分類:</strong> タスクを S / M / L / X に分け、Team化が必要か判断する。</li>
+        <li><strong>計画:</strong> 仕様、リスク、順序依存、編集範囲、検証観点を決める。</li>
+        <li><strong>分担:</strong> Agentごとに目的、入力、対象範囲、禁止事項、出力形式を明確に渡す。</li>
+        <li><strong>作業:</strong> Workerは限定されたscopeだけを編集する。</li>
+        <li><strong>レビュー:</strong> Reviewer / Tester / Security / DevOpsが欠陥や不足を確認する。</li>
+        <li><strong>修正:</strong> blocking findingが残る場合は、完了せず最小scopeで修正して再レビューする。</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>4. タスク複雑度と推奨Agent数</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>複雑度</th>
+            <th>目安</th>
+            <th>推奨Agent数</th>
+            <th>構成例</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>S</td>
+            <td>単一ファイル、typo、小さい修正</td>
+            <td>0〜1体</td>
+            <td>本体処理、またはImplementerのみ</td>
+          </tr>
+          <tr>
+            <td>M</td>
+            <td>2〜5ファイル、1〜2領域、既存パターンへの追加</td>
+            <td>2〜4体</td>
+            <td>Planner + Specialist + Implementer + Reviewer</td>
+          </tr>
+          <tr>
+            <td>L</td>
+            <td>新機能、複数領域、API変更、設計変更</td>
+            <td>4〜7体</td>
+            <td>Coordinator + Planner + Specialist群 + Implementer + Reviewer + Tester</td>
+          </tr>
+          <tr>
+            <td>X</td>
+            <td>認証境界、データ形式、移行、広範囲リファクタ</td>
+            <td>6〜9体</td>
+            <td>Coordinator主導 + Security + DevOps + Tester + 複数Specialist</td>
+          </tr>
+          <tr>
+            <td>例外</td>
+            <td>大規模な並列調査・横断レビュー</td>
+            <td>10〜12体</td>
+            <td>明確に分割できる調査単位がある場合のみ</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout caution">
+        <strong>目安:</strong>
+        通常運用は 3〜7体が扱いやすいです。10体以上は「明確に並列化できる」「統合役がいる」「出力形式が揃っている」場合だけにします。
+      </div>
+    </section>
+
+    <section>
+      <h2>5. Agentに渡す指示テンプレート</h2>
+      <p>Agent Teamで一番重要なのは、各Agentへの指示を曖昧にしないことです。</p>
+
+      <pre><code>## Mission
+あなたの役割は {role} です。
+今回の目的は {goal} です。
+
+## Scope
+対象範囲:
+- {paths_or_domains}
+
+対象外:
+- {out_of_scope}
+
+## Input
+参照すべき情報:
+- {requirements}
+- {existing_files}
+- {constraints}
+
+## Output
+返す形式:
+- 結論
+- 根拠
+- 変更が必要な箇所
+- リスク
+- 未決事項
+- 次に起動すべきAgentがあれば理由つきで提案
+
+## Rules
+- scope外の作業をしない
+- 不明点は推測せず「未決事項」に入れる
+- 同一ファイルを他Workerと並列編集しない
+- blocking finding は明確にラベル付けする</code></pre>
+    </section>
+
+    <section>
+      <h2>6. 並列化してよいもの / だめなもの</h2>
+      <div class="grid two">
+        <div class="card ok">
+          <strong>並列化してよい</strong>
+          <ul>
+            <li>独立したリサーチ</li>
+            <li>別領域のread-onlyレビュー</li>
+            <li>別ファイル・別責務の実装</li>
+            <li>セキュリティ観点とテスト観点の並行確認</li>
+            <li>複数案の生成と比較</li>
+          </ul>
+        </div>
+        <div class="card bad">
+          <strong>並列化しない方がよい</strong>
+          <ul>
+            <li>同一ファイルの編集</li>
+            <li>API仕様が未確定なfrontend / backend同時実装</li>
+            <li>データモデル変更と利用側実装の同時進行</li>
+            <li>認証・権限境界の判断が未確定な作業</li>
+            <li>最終文体や設計一貫性が重要な成果物</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>7. Teamを使うべきではないケース</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ケース</th>
+            <th>理由</th>
+            <th>代替</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>typoや単一ファイルの軽微修正</td>
+            <td>調整コストのほうが大きい。</td>
+            <td>単体Agentで即修正。</td>
+          </tr>
+          <tr>
+            <td>順序依存が強い作業</td>
+            <td>前工程の決定がないと後工程がブレる。</td>
+            <td>まずPlannerで仕様確定。</td>
+          </tr>
+          <tr>
+            <td>scopeを明確に切れない作業</td>
+            <td>Agent間で重複・漏れ・過剰作業が起きる。</td>
+            <td>人間またはCoordinatorが先に分解。</td>
+          </tr>
+          <tr>
+            <td>検証方法がない作業</td>
+            <td>レビューが主観になりやすい。</td>
+            <td>先に期待結果と検証観点を作る。</td>
+          </tr>
+          <tr>
+            <td>「念のため」だけで増やす</td>
+            <td>コスト、遅延、文脈汚染が増える。</td>
+            <td>必要な観点だけチェックリスト化。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>8. よくある設計パターン</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>パターン</th>
+            <th>向いている用途</th>
+            <th>構成</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Research Team</td>
+            <td>網羅調査、競合調査、技術比較</td>
+            <td>Coordinator + 複数Research Specialist + Citation / Reviewer</td>
+          </tr>
+          <tr>
+            <td>Implementation Team</td>
+            <td>中規模実装、既存機能追加</td>
+            <td>Planner + Domain Specialist + Implementer + Reviewer + Tester</td>
+          </tr>
+          <tr>
+            <td>Architecture Review Team</td>
+            <td>設計変更、クラウド構成、認証境界</td>
+            <td>Architect / Security / DevOps / Cost / Reviewer</td>
+          </tr>
+          <tr>
+            <td>Migration Team</td>
+            <td>データ形式変更、API移行、互換性対応</td>
+            <td>Coordinator + Data Specialist + Implementer + Tester + Rollback Planner</td>
+          </tr>
+          <tr>
+            <td>Content Team</td>
+            <td>SEO記事、ドキュメント、提案書</td>
+            <td>Researcher + Structure Writer + Writer + Editor + Fact Checker</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>9. 最小ルールセット</h2>
+      <p>まずはこのルールだけでも入れると、Agent Teamはかなり安定します。</p>
+
+      <pre><code>## Agent Team 基本ルール
+
+1. Agent Teamは、タスクが分解可能で、並列調査またはレビュー価値がある場合のみ使う。
+2. 小さい修正は単体Agentで処理する。
+3. 中央Coordinatorが最終判断と統合を担当する。
+4. 子Agentはさらに子Agentを起動しない。
+5. Specialistは原則read-onlyにする。
+6. Workerには編集対象、禁止事項、期待出力を明確に渡す。
+7. 同一ファイルを複数Workerで並列編集しない。
+8. Reviewer / Tester / Securityは必要なときだけ起動する。
+9. blocking findingが残る場合は完了扱いにしない。
+10. Agent数は通常3〜7体、多くても明確な理由がある場合のみ10体以上にする。</code></pre>
+    </section>
+
+    <section>
+      <h2>10. 公式情報からの設計根拠</h2>
+      <ul class="source-list">
+        <li>
+          <a href="https://www.anthropic.com/engineering/built-multi-agent-research-system" target="_blank" rel="noopener noreferrer">
+            Anthropic Engineering: How we built our multi-agent research system
+          </a>
+          <br><span class="small">Lead agentがsubagentへ目的・出力形式・利用ツール・情報源・境界を明確に渡す必要がある、という設計根拠。</span>
+        </li>
+        <li>
+          <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener noreferrer">
+            Anthropic Engineering: Effective context engineering for AI agents
+          </a>
+          <br><span class="small">Contextは有限であり、Agentに渡す情報を設計する必要がある、という根拠。</span>
+        </li>
+        <li>
+          <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank" rel="noopener noreferrer">
+            OpenAI Agents SDK: Agent orchestration
+          </a>
+          <br><span class="small">Agentの実行順序、判断方法、handoffをどう制御するかという設計根拠。</span>
+        </li>
+        <li>
+          <a href="https://developers.openai.com/api/docs/guides/agents" target="_blank" rel="noopener noreferrer">
+            OpenAI API Docs: Agents SDK
+          </a>
+          <br><span class="small">Agentsは計画し、ツールを呼び、specialistと協調し、multi-step workを行うアプリケーションという定義。</span>
+        </li>
+        <li>
+          <a href="https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/" target="_blank" rel="noopener noreferrer">
+            Google Research: Towards a science of scaling agent systems
+          </a>
+          <br><span class="small">Multi-agentはタスク特性次第で改善も悪化もするため、増やしすぎず、タスクに応じて設計すべきという根拠。</span>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    Agent Team 設計ガイド / 一般設計版
+  </footer>
+</body>
+</html>
