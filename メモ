@@ -1,0 +1,3 @@
+1.	ログの集約: CloudTrail、VPC Flow Logs、GuardDuty findingsをS3/CloudWatch Logsに集約
+	2.	一次検知は従来型に任せる: GuardDutyやSecurity Hubが機械学習ベースの異常検知を標準でやってくれるので、まずこれを有効化
+	3.	LLMで意味的な分析を追加: 検知イベントをEventBridge経由でLambdaに流し、Bedrock(Claude等)に「このAPIコール列は攻撃の兆候か」を文脈込みで判定させる。従来のルールベースでは拾えない「正規権限の悪用」みたいなグレーゾーンに効きます
